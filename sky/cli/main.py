@@ -16,6 +16,8 @@ from rich.markdown import Markdown
 from rich import print as rprint
 
 from .ascii_art import SKY_FULL_LOGO, get_responsive_logo
+from src import ASSETS_DIR
+from src.utils.assets import find_asset
 
 app = typer.Typer(
     name="sky",
@@ -202,19 +204,46 @@ def setup():
             table.add_row(module_name, "❌ Missing", description)
     
     # Check data files
-    synthesis_file = Path("/home/ryan/kricthack/kricthack/synthesis-agent/assets/mp_synthesis_recipes.json.gz")
-    embedding_file = Path("/home/ryan/kricthack/kricthack/synthesis-agent/assets/embedding/mp_dataset_composition_magpie.h5")
+    synthesis_file = find_asset(
+        preferred_names=["mp_synthesis_recipes.json.gz"],
+        globs=["*synthesis*recipes*.json*"],
+        base=ASSETS_DIR,
+    )
+    embedding_file = find_asset(
+        preferred_names=["mp_dataset_composition_magpie.h5"],
+        globs=["*composition*.h5"],
+        base=ASSETS_DIR / "embedding",
+    )
+    structure_embedding_file = find_asset(
+        preferred_names=["mp_dataset_structure_mace.h5"],
+        globs=["*structure*.h5"],
+        base=ASSETS_DIR / "embedding",
+    )
     
     table.add_row(
         "Synthesis Recipes",
-        "✅ Found" if synthesis_file.exists() else "❌ Missing",
-        f"{synthesis_file.stat().st_size / 1024 / 1024:.1f} MB" if synthesis_file.exists() else "Required for synthesis data"
+        "Found" if synthesis_file and synthesis_file.exists() else "Missing",
+        f"{synthesis_file.stat().st_size / 1024 / 1024:.1f} MB"
+        if synthesis_file and synthesis_file.exists()
+        else "Required for synthesis data"
     )
     
     table.add_row(
         "Composition Embeddings",
-        "✅ Found" if embedding_file.exists() else "❌ Missing",
-        f"{embedding_file.stat().st_size / 1024 / 1024:.1f} MB" if embedding_file.exists() else "Required for similarity search"
+        "Found" if embedding_file and embedding_file.exists() else "Missing",
+        f"{embedding_file.stat().st_size / 1024 / 1024:.1f} MB"
+        if embedding_file and embedding_file.exists()
+        else "Required for similarity search"
+    )
+    
+    table.add_row(
+        "Structure Embeddings",
+        "Found"
+        if structure_embedding_file and structure_embedding_file.exists()
+        else "Missing",
+        f"{structure_embedding_file.stat().st_size / 1024 / 1024:.1f} MB"
+        if structure_embedding_file and structure_embedding_file.exists()
+        else "Required for structure similarity search"
     )
     
     console.print(table)

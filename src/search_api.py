@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
 
 from src import ASSETS_DIR
+from src.utils.assets import find_asset
 from src.embedding import MaterialsEmbedding, InputType
 from src.schema import Neighbor
 
@@ -26,11 +27,21 @@ class SearchAPI:
 
     def _load_mp_data(self):
         if self.featurizer.input_type == InputType.COMPOSITION:
-            h5_file = ASSETS_DIR / "embedding" / "mp_dataset_composition_magpie.h5"
+            h5_file = find_asset(
+                preferred_names=["mp_dataset_composition_magpie.h5"],
+                globs=["*composition*.h5"],
+                base=ASSETS_DIR / "embedding",
+            )
         elif self.featurizer.input_type == InputType.STRUCTURE:
-            h5_file = ASSETS_DIR / "embedding" / "mp_dataset_structure_mace.h5"
+            h5_file = find_asset(
+                preferred_names=["mp_dataset_structure_mace.h5"],
+                globs=["*structure*.h5"],
+                base=ASSETS_DIR / "embedding",
+            )
         else:
             raise ValueError("Invalid input type.")
+        if h5_file is None:
+            raise FileNotFoundError("No embedding HDF5 file found in assets/embedding")
         print(f"Loading MP dataset from {h5_file}")
 
         with h5py.File(h5_file, "r") as f:

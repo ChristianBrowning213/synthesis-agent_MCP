@@ -12,11 +12,13 @@ from monty.serialization import loadfn
 from agents import Agent, Runner, SQLiteSession, function_tool
 from pymatgen.core import Composition, Structure
 
+from src import ASSETS_DIR
 from src.embedding import InputType
 from src.search_api import SearchAPI
 from src.agent import SynthesisAgent as CoreSynthesisAgent
 from src.schema import Neighbor
 from src.recursive_synthesis import RecursiveSynthesisSearch
+from src.utils.assets import find_asset
 from sky.report.html_generator import HTMLReportGenerator, SynthesisReportData
 
 DEFAULT_MODEL = "o3"
@@ -223,9 +225,13 @@ def get_synthesis_recipes(target_formula: str, similar_formulas: Optional[List[s
     """
     try:
         # Load synthesis recipes from compressed JSON
-        recipes_file = "/home/ryan/kricthack/kricthack/synthesis-agent/assets/mp_synthesis_recipes.json.gz"
+        recipes_file = find_asset(
+            preferred_names=["mp_synthesis_recipes.json.gz"],
+            globs=["*synthesis*recipes*.json*"],
+            base=ASSETS_DIR,
+        )
         
-        if not os.path.exists(recipes_file):
+        if not recipes_file or not recipes_file.exists():
             # Try Materials Project API as fallback
             mp_key = os.getenv("MP_API_KEY")
             if mp_key:

@@ -12,8 +12,6 @@ from collections import defaultdict
 import numpy as np
 
 from pymatgen.core import Composition
-from mp_api.client import MPRester
-
 from .schema import Neighbor, SynthesisRecipe
 from .agent import SynthesisAgent
 
@@ -86,7 +84,16 @@ class RecursiveSynthesisSearch:
             verbose: Print search progress
         """
         self.agent = synthesis_agent or SynthesisAgent()
-        self.mpr = mpr or MPRester(api_key=os.getenv("MP_API_KEY"))
+        if mpr is not None:
+            self.mpr = mpr
+        else:
+            mp_key = os.getenv("MP_API_KEY")
+            if mp_key:
+                from mp_api.client import MPRester
+
+                self.mpr = MPRester(api_key=mp_key)
+            else:
+                self.mpr = None
         self.max_depth = max_depth
         self.min_confidence = min_confidence
         self.confidence_decay = confidence_decay

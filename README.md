@@ -70,6 +70,50 @@ Note: SKY uses OPENAI_API_KEY (or OPENAI_MDG_API_KEY) and optionally MP_API_KEY 
 
 ---
 
+## MCP Server (stdio)
+
+Run the MCP server for general AI tool use:
+
+```bash
+uv run sky-mcp
+# or
+python -m sky_mcp.server
+```
+
+### MCP tools
+
+Canonical CIF-text tools (portable across clients):
+- `read_cif(cif: str)`
+- `search_similar_by_structure_cif(cif: str, top_n: int = 10)`
+
+Local-only convenience tools:
+- `read_cif_path(cif_path: str)`
+- `search_similar_by_structure_path(cif_path: str, top_n: int = 10)`
+
+Other tools:
+- `capabilities()`
+- `self_check()`
+- `search_similar_by_composition(formula: str, top_n: int = 10)`
+- `get_material_properties(material_ids: list[str])`
+- `get_synthesis_recipes(formula: str, max_recipes: int = 5)`
+- `analyze_synthesis_parameters(text: str)`
+- `recursive_synthesis_search(formula: str, max_depth: int = 3, min_confidence: float = 0.7, n_initial_neighbors: int = 30)`
+- `discover_synthesis_report(query: str, html: bool = false)` (expensive, networked, nondeterministic)
+
+### Environment variables
+- `MP_API_KEY` (required for Materials Project data)
+- `OPENAI_API_KEY` or `OPENAI_MDG_API_KEY` (required for `discover_synthesis_report`)
+- `SKY_MCP_MAX_FILE_BYTES` (override max local file size; default 2,000,000 bytes)
+- `SKY_MCP_ALLOWED_ROOTS` (extra allowed roots for local-only path tools; os.pathsep-separated)
+
+### Assets
+Similarity tools require embedding assets under `assets/embedding/*.h5`.
+
+### Local-only path safety
+Local-only path tools are restricted to allowed roots (repo root, assets directory, and current working directory by default).
+
+---
+
 ### Usage 1: Find similar materials by **composition**
 
 ```python
